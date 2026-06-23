@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+   agent any
 
     options {
         skipDefaultCheckout(true)
@@ -8,6 +8,8 @@ pipeline {
     environment {
         PYTHON = 'C:/Users/Aorus PC/AppData/Local/Programs/Python/Python312/python.exe'
         PYTHON_SCRIPTS = 'C:/Users/Aorus PC/AppData/Local/Programs/Python/Python312/Scripts'
+        PYTHONUTF8 = '1'
+        PYTHONIOENCODING = 'utf-8'
     }
 
     stages {
@@ -24,6 +26,8 @@ pipeline {
                         returnStatus: true,
                         script: '''
 @echo off
+chcp 65001 >nul
+
 echo === Python utilise par Jenkins ===
 "%PYTHON%" --version
 if errorlevel 1 exit /b 1
@@ -41,13 +45,17 @@ exit /b 0
                     )
 
                     if (setupExitCode != 0) {
-                        error("Preparation du detecteur echouee (code ${setupExitCode}).")
+                        error("Preparation du detecteur echouee avec le code ${setupExitCode}.")
                     }
 
                     int detectorExitCode = bat(
                         returnStatus: true,
                         script: '''
 @echo off
+chcp 65001 >nul
+set "PYTHONUTF8=1"
+set "PYTHONIOENCODING=utf-8"
+
 echo === Lancement de l analyse architecturale ===
 "%PYTHON_SCRIPTS%/antipattern-detect.exe" --path . > detector-output.txt 2>&1
 exit /b %ERRORLEVEL%
@@ -55,7 +63,7 @@ exit /b %ERRORLEVEL%
                     )
 
                     String output = fileExists('detector-output.txt')
-                        ? readFile('detector-output.txt')
+                        ? readFile(file: 'detector-output.txt', encoding: 'UTF-8')
                         : ''
 
                     echo '========== RESULTAT DU DETECTEUR =========='
