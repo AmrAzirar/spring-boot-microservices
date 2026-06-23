@@ -1,4 +1,3 @@
-:::writing{variant="standard" id="35184"}
 pipeline {
     agent any
 
@@ -71,4 +70,3 @@ pipeline {
         }
     }
 }
-:::
